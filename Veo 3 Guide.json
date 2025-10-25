@@ -1,0 +1,705 @@
+{
+  "name": "Veo 3 Guide",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Veo 3 video generation",
+        "formDescription": "Generating videos using Veo 3",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Text prompt",
+              "fieldType": "textarea",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Aspect Ratio",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "16:9"
+                  },
+                  {
+                    "option": "9:16"
+                  },
+                  {
+                    "option": "1:1"
+                  }
+                ]
+              },
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -320,
+        -64
+      ],
+      "id": "3dc8aede-8447-4ee9-ad0e-d178f74aa50f",
+      "name": "On form submission",
+      "webhookId": "89cfdea2-5bdf-4dee-8acb-98ce9de9e177"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/veo3/fast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"prompt\": \"{{ $json['Text prompt'] }}\",\n  \"aspect_ratio\": \"{{ $json['Aspect Ratio'] }}\",\n  \"enhance_prompt\": true,\n  \"auto_fix\": true,\n  \"resolution\": \"1080p\",\n  \"generate_audio\": true\n\n  \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -112,
+        -64
+      ],
+      "id": "e75b70c4-874d-4b29-9b5c-8c9a2165e254",
+      "name": "Video Clip Process",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zR7bMj7qBZy25ZXh",
+          "name": "FAL AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        -64
+      ],
+      "id": "9b581acc-227c-4f28-b323-34aa7adef58b",
+      "name": "Wait",
+      "webhookId": "633a1bb8-78f9-4e7f-9aa7-ff5e0f47d7d6"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.status_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        224,
+        -64
+      ],
+      "id": "37ccbbdd-b16e-4e50-ae9e-2cc3b59d1dc1",
+      "name": "Status Check",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zR7bMj7qBZy25ZXh",
+          "name": "FAL AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "969f9f4f-3b02-4c42-a971-b0a36ec39210",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "Completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        -64
+      ],
+      "id": "81f1aca3-a672-4533-b426-1b7f921fec9d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.response_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        -64
+      ],
+      "id": "6edd5621-02fc-436d-8768-6f4555256913",
+      "name": "Get Video",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zR7bMj7qBZy25ZXh",
+          "name": "FAL AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "respondWith": "redirect",
+        "redirectUrl": "={{ $json.video.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        -64
+      ],
+      "id": "b159e77b-f011-40c1-acfd-6cd97afc6d48",
+      "name": "Form",
+      "webhookId": "14ec7af6-86c0-45cb-ab83-4bf95463331e"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/veo3/fast",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"prompt\": \"{{ $json.Prompt }}\",\n  \"aspect_ratio\": \"{{ $json.Ratio }}\",\n  \"enhance_prompt\": true,\n  \"auto_fix\": true,\n  \"resolution\": \"1080p\",\n  \"generate_audio\": true\n \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        16,
+        640
+      ],
+      "id": "4befd924-728d-4f6c-bcdc-4323313edbe8",
+      "name": "Video Clip Process1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zR7bMj7qBZy25ZXh",
+          "name": "FAL AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        640
+      ],
+      "id": "a77e4bb1-0e8b-4ea8-a0df-eb1d74fd0d32",
+      "name": "Wait1",
+      "webhookId": "633a1bb8-78f9-4e7f-9aa7-ff5e0f47d7d6"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.status_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        640
+      ],
+      "id": "895235c7-1eca-467b-a5a2-2abff9032b37",
+      "name": "Status Check1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zR7bMj7qBZy25ZXh",
+          "name": "FAL AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "969f9f4f-3b02-4c42-a971-b0a36ec39210",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "Completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        480,
+        640
+      ],
+      "id": "8be18602-8338-4315-a25e-72bdb4bac7fd",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.response_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        640
+      ],
+      "id": "22974c3c-58da-48e4-a309-291c0dac9f86",
+      "name": "Get Video1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "zR7bMj7qBZy25ZXh",
+          "name": "FAL AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Video Generation",
+        "height": 320,
+        "width": 864,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -160,
+        -144
+      ],
+      "typeVersion": 1,
+      "id": "4253db1b-6172-47e1-b59d-af486395df0e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Video Generation",
+        "height": 320,
+        "width": 896,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -32,
+        560
+      ],
+      "typeVersion": 1,
+      "id": "3d3ed8c2-7cbf-48b0-a8b3-3c86820d740d",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1enLksl-Wa-uiXTHBmejkGgxc4KPBEkJ83C417ptO4t4",
+          "mode": "list",
+          "cachedResultName": "Veo 3.1 Video Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1enLksl-Wa-uiXTHBmejkGgxc4KPBEkJ83C417ptO4t4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1enLksl-Wa-uiXTHBmejkGgxc4KPBEkJ83C417ptO4t4/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Generated Video"
+            },
+            {
+              "lookupColumn": "Approved",
+              "lookupValue": "Generate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -176,
+        640
+      ],
+      "id": "50df9f28-edf0-4457-8fd7-db782d5b4a07",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f1K3FKkisyA00oCr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -416,
+        640
+      ],
+      "id": "0df6a2c9-e8dc-46e0-915b-57254c4a4a82",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1enLksl-Wa-uiXTHBmejkGgxc4KPBEkJ83C417ptO4t4",
+          "mode": "list",
+          "cachedResultName": "Veo 3.1 Video Generation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1enLksl-Wa-uiXTHBmejkGgxc4KPBEkJ83C417ptO4t4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1enLksl-Wa-uiXTHBmejkGgxc4KPBEkJ83C417ptO4t4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [
+            "Prompt"
+          ],
+          "schema": [
+            {
+              "id": "Prompt",
+              "displayName": "Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ratio",
+              "displayName": "Ratio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Approved",
+              "displayName": "Approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Generated Video",
+              "displayName": "Generated Video",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        688
+      ],
+      "id": "45256a69-8629-4ec2-86ee-d01ea2be60e0",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f1K3FKkisyA00oCr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Video Generation from Sheet (Prompt)\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        256,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "f0f737d6-a7ea-4843-bb30-fa6018a16cab",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Topic Type\n\nTopic wise Video generation"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "bb7a032f-574f-4c1a-a81e-cefe13f4f414",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Credential\n1. Fal AI (API) /Kie AI\n2. Veo 3 / Sora 2"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -864,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "bc64c6e3-4532-40d0-9a24-bf9ca3cc4f78",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Video Clip Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Clip Process": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Status Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status Check": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Clip Process1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Status Check1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status Check1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Get Video1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video1": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Video Clip Process1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0b506879-04cf-4f50-bace-3c3d29669de7",
+  "meta": {
+    "instanceId": "16ccf860222ccfccc3dcf7307d08179a43d7d5df3c8b021b7106857d60122782"
+  },
+  "id": "oMqY4BJMfQZYE68x",
+  "tags": []
+}
