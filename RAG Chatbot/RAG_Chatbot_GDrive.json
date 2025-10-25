@@ -1,0 +1,479 @@
+{
+  "name": "RAG Chatbot [Skool]",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "04bfe066-90c2-4034-8c43-f0d1f163252c",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        440,
+        0
+      ],
+      "id": "3defe8ac-d205-4c08-87a8-51b687f6df84",
+      "name": "Download File",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Bj82pFG4mfE7BS7q",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1Nky6Ej_cRvxCj2AUJcMqi_KmP1IdICnM",
+            "mode": "list",
+            "cachedResultName": "Hormozi Books",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1Nky6Ej_cRvxCj2AUJcMqi_KmP1IdICnM"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        220,
+        0
+      ],
+      "id": "9020486a-cfc7-469b-9868-5991757cf84f",
+      "name": "Search Files",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Bj82pFG4mfE7BS7q",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9eb3419c-6b72-4b1c-8726-01e20f384d6d",
+              "name": "documentName",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        660,
+        0
+      ],
+      "id": "9e41f4dc-e6eb-45a7-9ef4-28839f33ba1e",
+      "name": "Set DocMeta"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "hormozi-gpt",
+          "mode": "list",
+          "cachedResultName": "hormozi-gpt"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        0
+      ],
+      "id": "75d2a62c-7062-470f-bcbc-80f6fe4044f9",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "vQaa6O4lcZbnedei",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        860,
+        220
+      ],
+      "id": "20e6ca98-1add-4d7d-8f7a-135717e952e9",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {
+          "splitCode": "markdown"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        960,
+        340
+      ],
+      "id": "9d999a3a-b41e-489e-9ec8-9510b73ac435",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1140,
+        220
+      ],
+      "id": "357bc3a3-c78b-4d0c-8e2c-fc2d95cef9b5",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "l1L0NI2IavDclquG",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        60,
+        460
+      ],
+      "id": "b506b194-bc56-4379-bf42-6102de23e550",
+      "name": "When chat message received",
+      "webhookId": "7325a90c-da5e-4d68-b3f2-b62197fbb9af"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are “Hormozi Bot,” a concise expert on Alex Hormozi’s writings.\n\nKNOWLEDGE SOURCE  \n• Two PDFs are indexed in Pinecone:  \n  – “$100M Offers”  \n  – “$100M Leads”  \n\nBEHAVIOR RULES  \n1. Answer **only** from those books; if the answer isn’t there, say “I don’t see that in Alex’s books.”  \n2. Be direct—1-2 short paragraphs or a bullet list.  \n3. For numbers, frameworks, formulas, or definitions, quote exactly as written.  \n4. After each key fact, add a citation in this format: **(Offers p #, or Leads p #)**.  \n5. Never reveal embedding vectors, internal IDs, or any private data.  \n6. Use Markdown for formatting (### headings, • bullets, **bold** sparingly).  \n7. If a follow-up question lacks context, politely ask for clarification instead of guessing.  "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        280,
+        460
+      ],
+      "id": "82dcdb1c-c232-44c6-8507-2196e9428d75",
+      "name": "Question & Answer"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        680
+      ],
+      "id": "35fc3388-95c0-49eb-8034-2fc6c822a7b3",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "l1L0NI2IavDclquG",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        380,
+        680
+      ],
+      "id": "8b9828e9-8945-43f1-9143-a29114ca5850",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "__default__",
+        "toolDescription": "Use this tool to answer questions about Alex Hormozi's books.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "hormozi-gpt",
+          "mode": "list",
+          "cachedResultName": "hormozi-gpt"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        540,
+        660
+      ],
+      "id": "6f4edb79-d18c-4b94-a67d-596def28c0d8",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "vQaa6O4lcZbnedei",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        820
+      ],
+      "id": "f0f83284-5f90-4ea6-a687-9d65a833483b",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "l1L0NI2IavDclquG",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        640,
+        460
+      ],
+      "id": "c6bba6bf-39df-4ebc-b0c0-5c085063a84a",
+      "name": "Airtable",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "G9hR4QlmDlhDEsmN",
+          "name": "Airtable account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Files": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Set DocMeta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set DocMeta": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Question & Answer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Question & Answer": {
+      "main": [
+        [
+          {
+            "node": "Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "68ea7f43-5886-461c-bde8-0d5990837bc6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "21c5d06e9a2e9af0bdfc9c1e8f894c404d4db78a60c6a307fd7ef94634692e0f"
+  },
+  "id": "djLNliEo4a2NzR2z",
+  "tags": []
+}
