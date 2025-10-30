@@ -1,0 +1,463 @@
+{
+  "name": "Send multiple emails in Gmail directly via Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "401b79a0-a079-4ea0-805b-a963d9206031",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.Status }}",
+              "rightValue": "Waiting for sending"
+            },
+            {
+              "id": "74ec18c7-e4cc-4d82-ba05-0ec4781cbb9f",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.Title }}",
+              "rightValue": ""
+            },
+            {
+              "id": "6e293a16-48cd-40bb-9882-09b456a97d58",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.Subject }}",
+              "rightValue": ""
+            },
+            {
+              "id": "a02d2518-e979-4a17-ab00-dda6723d9945",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.Email }}",
+              "rightValue": ""
+            },
+            {
+              "id": "bea4e49e-cf8a-4f05-bd6f-bdce0c5d8533",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.Name }}",
+              "rightValue": ""
+            },
+            {
+              "id": "e33eb064-34c6-4dea-b454-10f4fb7fe630",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.Date }}",
+              "rightValue": ""
+            },
+            {
+              "id": "1abe48e3-ba4d-4318-900d-fd58097d55ec",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ DateTime.fromFormat($json[\"Date\"], 'yyyy/MM/dd').startOf('day')}}",
+              "rightValue": "={{ $now.startOf('day')}}"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "id": "0e4c65ce-95e9-4a32-bc5c-0461cb339764",
+      "name": "Filter Status (Waiting for sending)",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1664,
+        1120
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "email",
+              "stringValue": "={{ $json.Email }}"
+            },
+            {
+              "name": "name",
+              "stringValue": "={{ $json.Name }}"
+            },
+            {
+              "name": "ID",
+              "stringValue": "={{ $json.ID }}"
+            }
+          ]
+        },
+        "include": "selected",
+        "options": {}
+      },
+      "id": "27f33448-a016-4ac8-aea3-2ca267fb1628",
+      "name": "Set data",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2288,
+        1104
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "content": "# Node Descriptions\n\n## Retrieve Customer Messages Data (Google Sheets Node ):\n**Purpose and Use Cases:**\nThe primary purpose of this node is to retrieve data from a Google Sheets document that contains information about messages to customers. This could be used in various scenarios, such as:\n\n- Compiling a list of customer contacts for outreach campaigns.\n- Gathering feedback or responses stored in a spreadsheet.\n- Automating the process of updating customer records or tracking communications.\n\n\n## Filter Items by Current Date Node:\n- **Purpose:** Filters input items based on comparison with the current date.\n- **Parameters:**\n  - **JavaScript Code:** Compares item dates with the current date for filtering.\n- **Functionality:** Ensures only items with dates matching the current date are passed along.\n\n ### Note : The date format should be in this form (year/month/day) to be accepted.\n\n## Gmail Node:\n- **Purpose:** Likely sends emails using Gmail based on filtered items.\n- **Parameters:**\n  - **Recipient:** Extracted from input data.\n  - **Subject:** Extracted from input data.\n  - **Email Content:** Extracted from input data.\n\n## Update Message Status(Google Sheets Node ):\n- **Purpose:** Updates specific columns in the Google Sheets document.\n- **Parameters:**\n  - **Operation:** Update mode.\n  - **Columns:** Defines which columns to update with values from input data.\n\n## Filter Status (Waiting for sending) Node:\n- **Purpose:** Filters items based on specific status criteria.\n- **Parameters:**\n  - **Conditions:** Filters based on status, title, subject, email, name, and date.\n\n## Set data Node:\n- **Purpose:** Sets specified fields with extracted values from input data.\n\n## Merge feild Node:\n- **Purpose:** Merges fields from different sources based on position.\n\nFeel free to utilize these detailed descriptions to understand and enhance the workflow further.\n",
+        "height": 1171.2381808131183,
+        "width": 922.8914139860617
+      },
+      "id": "badf1d45-21e0-40a5-bcc4-c434f43c04d4",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        384,
+        256
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "# The Workflow",
+        "height": 539.317352764935,
+        "width": 1386.7301333853884
+      },
+      "id": "0f1cd01b-4cf0-4998-9c51-02c2c9c4aa2b",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1328,
+        880
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "d156f0da-53e7-499b-b652-5ca0c3c9e237",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        1344,
+        1120
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1pWsSpuPGCF_gb55mjL1QI3plNntZCOqzU-svlq46Y8s",
+          "mode": "list",
+          "cachedResultName": "Bulk mail to Customers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pWsSpuPGCF_gb55mjL1QI3plNntZCOqzU-svlq46Y8s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pWsSpuPGCF_gb55mjL1QI3plNntZCOqzU-svlq46Y8s/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "e398e809-b00f-4edb-af94-d236cfb80703",
+      "name": "Retrieve Customer Messages Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        1504,
+        1120
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f1K3FKkisyA00oCr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1pWsSpuPGCF_gb55mjL1QI3plNntZCOqzU-svlq46Y8s",
+          "mode": "list",
+          "cachedResultName": "Bulk mail to Customers",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pWsSpuPGCF_gb55mjL1QI3plNntZCOqzU-svlq46Y8s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Page",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pWsSpuPGCF_gb55mjL1QI3plNntZCOqzU-svlq46Y8s/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Sent successfully",
+            "ID": "={{ $json.ID }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6de55876-3924-4fdc-aae7-b901a2ce72be",
+      "name": "Update Message Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        2480,
+        1104
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f1K3FKkisyA00oCr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "={{ $json.Title }}",
+        "emailType": "text",
+        "message": "={{ $json.Subject }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "0401bfe7-de72-407a-a7f7-70b7da52e9c9",
+      "name": "Send a message (Gmail)",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1888,
+        992
+      ],
+      "notesInFlow": false,
+      "typeVersion": 2.1,
+      "alwaysOutputData": false,
+      "webhookId": "2d2e252a-ac49-4ef6-82eb-184272e3103f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mhPLecDOFgtvQaAx",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "94ff4e81-41c6-479e-bcb5-c9786935a954",
+      "name": "Merge fields",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        2112,
+        1104
+      ],
+      "typeVersion": 2.1
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set data": {
+      "main": [
+        [
+          {
+            "node": "Update Message Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge fields": {
+      "main": [
+        [
+          {
+            "node": "Set data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Retrieve Customer Messages Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message (Gmail)": {
+      "main": [
+        [
+          {
+            "node": "Merge fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Customer Messages Data": {
+      "main": [
+        [
+          {
+            "node": "Filter Status (Waiting for sending)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Status (Waiting for sending)": {
+      "main": [
+        [
+          {
+            "node": "Merge fields",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Send a message (Gmail)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "441e186f-39ba-46c9-8ff9-044c20c41ede",
+  "meta": {
+    "templateId": "2088",
+    "instanceId": "16ccf860222ccfccc3dcf7307d08179a43d7d5df3c8b021b7106857d60122782"
+  },
+  "id": "wAWobVYzqd9woJEV",
+  "tags": []
+}
