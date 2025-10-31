@@ -1,0 +1,291 @@
+{
+  "name": "Telegram Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -688,
+        -160
+      ],
+      "id": "f913fced-15fe-4c4e-adc5-f1f43a524cd9",
+      "name": "Telegram Trigger",
+      "webhookId": "86c2ac7a-530c-453e-ae6b-1e1b7a424ae3",
+      "credentials": {
+        "telegramApi": {
+          "id": "C963W6D7UwJ0OHqF",
+          "name": "Telegram Web3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}\n",
+        "options": {
+          "systemMessage": "=# Overview\nYou are the ultimate personal assistant. Your job is to send the user's query to the correct tool. Your sole responsibility is to call the correct tool.\n\n## Tools\n- **Think**: Use this to think deeply or if you get stuck\n- **researchAgent**: Use this tool to perform deeper web research or get current market info\n\n## Rules\n\n## Instructions\n1) Call the necessary tools based on the user's request\n2) Use the **Think** tool to verify you took the right steps. This tool should be called every time.\n\n## Examples\n1) \n- Input: send research topic to the research agent\n  - Action: Use **researchAgent** to get research articles\n- Output: The research has been sent to telegram message. Anything else I can help you with?\n\n## Final Reminders\nHere is the current date/time: {{ $now }}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -320,
+        -160
+      ],
+      "id": "1dcb928e-989d-4286-a218-faf8b206efed",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        -160
+      ],
+      "id": "1165d62f-0dfa-4122-86ae-ae39adc2631f",
+      "name": "Send a text message",
+      "webhookId": "bd7a65c9-33db-4048-b1fd-fc9e8917aed0",
+      "credentials": {
+        "telegramApi": {
+          "id": "C963W6D7UwJ0OHqF",
+          "name": "Telegram Web3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        112
+      ],
+      "id": "3d8b3bda-f5d6-4571-a937-d9349d357ae9",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "A research agent for all research actions",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "=# Overview\nYou are a web research assistant. Your responsibilities include conducting quick web searches, performing deeper research, and retrieving current weather information. \n\n**Web Search & Research**  \n   - Use **Tavily** for quick factual lookups, recent news, or verifying specific pieces of information.\n   - Use **Hacker News** when a question requires articles, multiple perspectives, or synthesized answers from hacker news articles sources. \n\nAlways explain your reasoning briefly when choosing between Tavily and Perplexity. Prioritize clarity, credibility, and helpfulness in your responses.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        16
+      ],
+      "id": "61460983-d23e-4ff1-b681-e2de4aed5351",
+      "name": "researchAgent"
+    },
+    {
+      "parameters": {
+        "description": "=Use the tool to think about something. It will not obtain new information or change the database, but just append the thought to the log. Use it when complex reasoning or some cache memory is needed."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        112
+      ],
+      "id": "51db0819-0a31-48a3-860d-91d8ee2bc634",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        64,
+        192
+      ],
+      "id": "bff26721-e447-47c3-aebd-a917a530e1c1",
+      "name": "Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "mt2oOJ4456AKdHMD",
+          "name": "Tavily Research"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        192
+      ],
+      "id": "343c8221-df71-4ae2-802e-80e6fdbdf937",
+      "name": "Research",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VxzWasWP9Dw2zjDr",
+          "name": "Google Gemini(PaLM) Image"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        112
+      ],
+      "id": "cc558424-9b9e-4792-a7ef-88dad0af16d4",
+      "name": "AI Agent Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VxzWasWP9Dw2zjDr",
+          "name": "Google Gemini(PaLM) Image"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "                                                                    ## Workflow\n",
+        "height": 624,
+        "width": 1296,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -784,
+        -272
+      ],
+      "typeVersion": 1,
+      "id": "d38950f2-3098-4d0a-b888-1e689c9b17c5",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "researchAgent": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "researchAgent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "researchAgent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ca49d246-9fdc-440a-b12f-81cbdfd3535e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "16ccf860222ccfccc3dcf7307d08179a43d7d5df3c8b021b7106857d60122782"
+  },
+  "id": "4wrXytW2TpBdDMCZ",
+  "tags": []
+}
