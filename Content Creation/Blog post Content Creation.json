@@ -1,0 +1,358 @@
+{
+  "name": "Blog post Content Creation",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        64
+      ],
+      "id": "c8e784ea-de69-4f44-986a-e857b0a773e3",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ZmyHczq5rkFf9GmOZXKieEKH0iGuE8l1nEFbrUe_m5M",
+          "mode": "list",
+          "cachedResultName": "Blog Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZmyHczq5rkFf9GmOZXKieEKH0iGuE8l1nEFbrUe_m5M/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZmyHczq5rkFf9GmOZXKieEKH0iGuE8l1nEFbrUe_m5M/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "To do"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -592,
+        64
+      ],
+      "id": "58f284bd-65cc-4975-a411-c0554377b66b",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f1K3FKkisyA00oCr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"query\": \"Search the web for {{ $json.Topic }}\",\n  \"topic\": \"general\",\n  \"search_depth\": \"basic\",\n  \"chunks_per_source\": 3,\n  \"max_results\": 3,\n  \"time_range\": null,\n  \"days\": 7,\n  \"include_answer\": true,\n  \"include_raw_content\": true,\n  \"include_images\": false,\n  \"include_image_descriptions\": false,\n  \"include_domains\": [],\n  \"exclude_domains\": []\n  \n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        64
+      ],
+      "id": "3232493f-935f-4fdd-9add-13abc60fa2d4",
+      "name": "Tavily"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Articles 1: {{ $json.results[0].content }}\nArticles 2: {{ $json.results[1].content }}\nArticles 3: {{ $json.results[2].content }}",
+        "options": {
+          "systemMessage": "=**Role:**\nYou are a skilled social media content creator specializing in transforming multiple articles into a single, engaging, and professional Facebook post. Your style is concise, inspiring, and emotionally resonant while maintaining credibility and clarity.\n\n**Goal:**\nGiven **three articles**, analyze their main ideas and synthesize them into **one cohesive Facebook post** that:\n\n* Captures the **core message** and **key insights** from all three sources.\n* Maintains a **positive, inspiring, and professional tone** suitable for a broad audience.\n* Encourages engagement through emotional resonance, relevance, and clarity.\n* Includes **relevant hashtags** and ** a few well-chosen emojis ** to enhance readability and appeal (without overuse).\n\n**Guidelines:**\n\n1. Keep the post **concise** — ideally **80–150 words**.\n2. Start with a **hook** or compelling insight that grabs attention.\n3. Use **natural, human language** — friendly but not casual.\n4. Integrate the articles’ shared themes (e.g., innovation, leadership, sustainability, wellness, etc.) into a **unified narrative**.\n5. End with a **call to reflection or gentle encouragement** (e.g., “Let’s keep moving forward together 🌍”).\n6. Include **2–5 relevant hashtags** and **1–3 emojis** that fit the tone and content.\n\n**Output Format:**\nA single, polished Facebook post ready to publish.\n\n---\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        64
+      ],
+      "id": "dd97bd74-702a-4791-a85c-d54b37c8585f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        224
+      ],
+      "id": "424cd33f-01df-46ba-bc82-28471b31a77c",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "AkxiNyurA2vk2jx7",
+          "name": "Google Gemini(PaLM) Newsletter"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1ZmyHczq5rkFf9GmOZXKieEKH0iGuE8l1nEFbrUe_m5M",
+          "mode": "list",
+          "cachedResultName": "Blog Post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZmyHczq5rkFf9GmOZXKieEKH0iGuE8l1nEFbrUe_m5M/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZmyHczq5rkFf9GmOZXKieEKH0iGuE8l1nEFbrUe_m5M/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Content": "={{ $json.output }}",
+            "Topic": "={{ $('Get row(s) in sheet').item.json.Topic }}",
+            "Status": "Created"
+          },
+          "matchingColumns": [
+            "Topic"
+          ],
+          "schema": [
+            {
+              "id": "Topic",
+              "displayName": "Topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        160,
+        64
+      ],
+      "id": "4d6aad68-7d54-4a96-b095-bee785ff5c30",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "f1K3FKkisyA00oCr",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Blog post Content Creation Workflow",
+        "height": 592,
+        "width": 1280,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -896,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "426d48d3-f73b-4660-a1a2-ad4d0b37993b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Search through Tavily",
+        "height": 96,
+        "width": 192,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "a99bc1b5-4b30-40c5-a539-c468ab1554fa",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Get Topic from Sheets",
+        "height": 80,
+        "width": 192,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -640,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "fba6c967-899e-4c6a-8697-d5bb528808ce",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Update Content into Sheets",
+        "height": 80,
+        "width": 192,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        128,
+        240
+      ],
+      "typeVersion": 1,
+      "id": "ba13b7dc-7222-40e7-9274-eaca05c251b3",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## AI Agent generate content from Tavily search",
+        "height": 128,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -192,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "4cd22b23-3d72-4148-bcc5-0302d27eeb74",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Tavily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "29913474-0e5f-4024-afb3-58d5792d4138",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "16ccf860222ccfccc3dcf7307d08179a43d7d5df3c8b021b7106857d60122782"
+  },
+  "id": "fogIyvR3DCuxzmOs",
+  "tags": []
+}
